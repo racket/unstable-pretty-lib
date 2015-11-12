@@ -3,7 +3,10 @@
 
 (provide pretty-format/write
          pretty-format/display
-         pretty-format/print)
+         pretty-format/print
+         pretty-fprintf
+         pretty-printf
+         pretty-eprintf)
 
 (define ((pretty-format/pretty f) v [columns (pretty-print-columns)])
   (parameterize ([current-output-port (open-output-string)]
@@ -19,6 +22,22 @@
 ;; them pretty-write-to-string, etc?
 ;; Bleh, just saw pretty-format in racket/pretty :(
 
+;; helper struct for pretty-printf etc.
+(struct formatted (fmt vs)
+  #:methods gen:custom-write
+  [(define (write-proc this out mode)
+     (apply fprintf out (formatted-fmt this) (formatted-vs this)))])
+
+;; pretty-fprintf etc. all print one extra newline
+(define (pretty-fprintf out fmt . vs)
+  (pretty-print (formatted fmt vs) out))
+
+(define (pretty-printf fmt . vs)
+  (pretty-print (formatted fmt vs)))
+
+(define (pretty-eprintf fmt . vs)
+  (pretty-print (formatted fmt vs) (current-error-port)))
+  
 
 ;; by stamourv
 
